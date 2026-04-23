@@ -325,7 +325,6 @@ const APPS = [
   { id: 34, name: "CLOCKWORK",           desc: "Generate ChatGPT push notifications.",                                  url: null, expired: true, img: "/new/clockwork.png" },
   { id: 35, name: "BUY OR NOT",          desc: "Fun opportunity cost calculator.",                                       url: null, expired: true, img: "/new/buyornot.png" },
   { id: 36, name: "KEEP GOING",          desc: "Make your habits a movie.",                                              url: null, expired: true, img: "/new/keepgoing-3.png" },
-  { id: 37, name: "MOGORNOT",            desc: "Take a photo of you and your friend, see who mogs who?",                url: null, expired: true, img: "/new/mogornot-2.png" },
   { id: 38, name: "GO OFFLINE",          desc: "App that only works offline.",                                           url: null, expired: true, img: "/new/offline.png" },
   { id: 39, name: "MANIFEST",            desc: "I'm not gonna crashout today.",                                          url: null, expired: true, img: "/new/manifest-2.png" },
   { id: 40, name: "GLAZE",              desc: "Show your friends love.",                                                 url: null, expired: true, img: "/new/glaze.png" },
