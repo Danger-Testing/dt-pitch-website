@@ -869,7 +869,7 @@ export default function Home() {
               )}
             </div>
             <p className="text-xs text-white/50 leading-snug">
-              Backers by{" "}
+              Backed by{" "}
               {BACKED_BY.map((b, i) => (
                 <span key={b.name}>
                   <span className="text-white/80 font-semibold">{b.name}</span>
