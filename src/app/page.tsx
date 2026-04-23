@@ -498,7 +498,17 @@ export default function Home() {
             style={{ scrollbarWidth: "none" }}
           >
             {Array.from({ length: Math.max(slideCount, 1) }).map((_, i) => (
-              <div key={i} className="h-full snap-start shrink-0 flex items-center justify-center bg-black">
+              <div
+                key={i}
+                className="h-full snap-start shrink-0 flex items-center justify-center bg-black relative"
+                onClick={(e) => {
+                  const el = slideFeedRef.current;
+                  if (!el) return;
+                  const left = e.clientX < e.currentTarget.getBoundingClientRect().left + e.currentTarget.offsetWidth / 2;
+                  const next = left ? Math.max(i - 1, 0) : Math.min(i + 1, slideCount - 1);
+                  el.scrollTo({ top: next * el.clientHeight, behavior: "smooth" });
+                }}
+              >
                 {pdfPages[i] ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={pdfPages[i]} alt={`Slide ${i + 1}`} className="w-full h-full object-contain" />
