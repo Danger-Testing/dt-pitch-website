@@ -758,7 +758,7 @@ export default function Home() {
       <div className="w-full max-w-[430px] bg-black text-white min-h-screen flex flex-col">
         {/* Profile info */}
         <div className="px-4 pt-12 pb-4">
-          <div className="flex items-start gap-4">
+          <div className="flex items-center gap-4">
             <div className="relative shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
