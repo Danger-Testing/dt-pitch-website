@@ -112,6 +112,7 @@ type AppEntry = {
   img: string;
   bg?: string;
   content?: ReactNode;
+  expired?: boolean;
 };
 
 // ─── Social proof line under Fund button ──────────────────────────────────────
@@ -321,6 +322,13 @@ const APPS = [
   { id: 31, name: "Neue Blumen",          desc: "Art of arranging flowers.",                                             url: "https://www.neueblumen.com/",           tweet: "https://x.com/dangertesting/status/1940892511444119927", img: `${D}Screenshot_2026-04-21_at_18.39.01.png` },
   { id: 32, name: "MogOrNot",             desc: "Take a photo of you and your friend, see who mogs who.",               url: "https://www.mogornot.com/",             tweet: "https://x.com/downloadlos/status/1906768324861575367", img: `${D}Screenshot_2026-04-21_at_18.33.11.png` },
   { id: 33, name: "dangertesting.com",    desc: "The mothership.",                                                       url: "https://dangertesting.com",             img: `${D}image.png` },
+  { id: 34, name: "CLOCKWORK",           desc: "Generate ChatGPT push notifications.",                                  url: null, expired: true, img: "/new/clockwork.png" },
+  { id: 35, name: "BUY OR NOT",          desc: "Fun opportunity cost calculator.",                                       url: null, expired: true, img: "/new/buyornot.png" },
+  { id: 36, name: "KEEP GOING",          desc: "Make your habits a movie.",                                              url: null, expired: true, img: "/new/keepgoing-3.png" },
+  { id: 37, name: "MOGORNOT",            desc: "Take a photo of you and your friend, see who mogs who?",                url: null, expired: true, img: "/new/mogornot-2.png" },
+  { id: 38, name: "GO OFFLINE",          desc: "App that only works offline.",                                           url: null, expired: true, img: "/new/offline.png" },
+  { id: 39, name: "MANIFEST",            desc: "I'm not gonna crashout today.",                                          url: null, expired: true, img: "/new/manifest-2.png" },
+  { id: 40, name: "GLAZE",              desc: "Show your friends love.",                                                 url: null, expired: true, img: "/new/glaze.png" },
 ];
 
 const WARHOL_SECTIONS = [
@@ -553,7 +561,10 @@ export default function Home() {
                   )}
                   {/* Bottom overlay */}
                   <div className="absolute bottom-0 left-0 right-0 px-4 pb-6 pt-24 bg-gradient-to-t from-black/80 to-transparent z-10">
-                    <h3 className="text-lg font-black leading-tight">{a.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-black leading-tight">{a.name}</h3>
+                      {a.expired && <span className="text-xs font-bold text-white/40 border border-white/20 px-2 py-0.5 rounded-full">Expired</span>}
+                    </div>
                     <p className="text-sm opacity-80 mt-1 leading-snug">{a.desc}</p>
                     {a.url && (
                       <a href={a.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block bg-white text-black px-4 py-2 rounded-full text-xs font-black">Open ↗</a>
