@@ -989,7 +989,7 @@ export default function Home() {
                   )}
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                   <div className="absolute z-10 bg-white px-3 py-1.5 rounded" style={{ top: "5%", left: "15%", right: "15%", borderRadius: "12px" }}>
-                    <span className="text-black text-sm font-bold" style={{ lineHeight: "9px" }}>{v.title}</span>
+                    <span className="text-black font-bold" style={{ fontSize: "13px", lineHeight: "0.75" }}>{v.title}</span>
                   </div>
                   {v.src.type !== "link" && (
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
