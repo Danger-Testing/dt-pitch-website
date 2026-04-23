@@ -846,7 +846,7 @@ export default function Home() {
           </div>
 
           {/* Backers by social proof */}
-          <button onClick={() => setShowBackers(true)} className="flex items-center gap-2 mt-3 text-left w-full">
+          <button onClick={() => setShowBackers(true)} className="flex items-center gap-3 mt-3 text-left w-full">
             <div className="flex -space-x-2 shrink-0">
               {BACKED_BY.map((b) =>
                 b.img ? (
@@ -855,20 +855,20 @@ export default function Home() {
                     key={b.name}
                     src={b.img}
                     alt={b.name}
-                    className="w-6 h-6 rounded-full object-cover border-2 border-black"
+                    className="w-9 h-9 rounded-full object-cover border-2 border-black"
                   />
                 ) : (
                   <div
                     key={b.name}
-                    className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center text-black font-black"
-                    style={{ backgroundColor: b.color, fontSize: "8px" }}
+                    className="w-9 h-9 rounded-full border-2 border-black flex items-center justify-center text-black font-black"
+                    style={{ backgroundColor: b.color, fontSize: "9px" }}
                   >
                     {b.initials}
                   </div>
                 ),
               )}
             </div>
-            <p className="text-xs text-white/50 leading-snug">
+            <p className="text-sm text-white/50 leading-snug">
               Backed by{" "}
               {BACKED_BY.map((b, i) => (
                 <span key={b.name}>
