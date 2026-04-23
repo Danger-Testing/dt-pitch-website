@@ -507,7 +507,7 @@ export default function Home() {
             {Array.from({ length: Math.max(slideCount, 1) }).map((_, i) => (
               <div
                 key={i}
-                className="h-full snap-start shrink-0 flex items-center justify-center bg-black relative"
+                className="h-full snap-start shrink-0 flex items-center justify-center relative" style={{ background: "#111" }}
                 onClick={(e) => {
                   const el = slideFeedRef.current;
                   if (!el) return;
@@ -789,7 +789,7 @@ export default function Home() {
           <div className="flex gap-5 mt-4 text-center">
             <div>
               <div className="font-black text-lg leading-tight">
-                {APPS.length}
+                47
               </div>
               <div className="text-xs text-white/50">Apps</div>
             </div>
@@ -922,7 +922,7 @@ export default function Home() {
                   <button
                     key={i}
                     onClick={() => setActiveSlide(i)}
-                    className="relative aspect-[9/16] overflow-hidden group bg-black"
+                    className="relative aspect-[9/16] overflow-hidden group" style={{ background: "#111" }}
                   >
                     {pdfPages[i] ? (
                       // eslint-disable-next-line @next/next/no-img-element
