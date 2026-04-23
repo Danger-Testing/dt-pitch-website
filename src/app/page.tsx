@@ -480,7 +480,7 @@ export default function Home() {
   }, [activeApp, activeSlide]);
 
   return (
-    <div className="min-h-screen bg-neutral-900 flex justify-center font-sans select-none">
+    <div className="min-h-screen bg-black flex justify-center font-sans select-none">
       {/* ── Pitch feed ── */}
       {activeSlide !== null && (
         <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex flex-col">
@@ -964,7 +964,7 @@ export default function Home() {
                 <button
                   key={v.id}
                   onClick={() => v.src.type === "link" ? window.open(v.src.url, "_blank") : setActiveVibe(i)}
-                  className="relative aspect-[9/16] overflow-hidden group bg-neutral-900"
+                  className="relative aspect-[9/16] overflow-hidden group bg-black"
                 >
                   {v.src.type === "youtube" ? (
                     // eslint-disable-next-line @next/next/no-img-element
