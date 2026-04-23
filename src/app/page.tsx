@@ -359,7 +359,7 @@ export default function Home() {
   const [activeSlide, setActiveSlide] = useState<number | null>(null);
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [showFund, setShowFund] = useState<number | null>(null);
-  const [showBelievers, setShowBelievers] = useState(false);
+  const [showBacked, setShowBacked] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
   const [showWarhol, setShowWarhol] = useState(false);
   const warholAudioCache = useRef<Record<string, HTMLAudioElement>>({});
@@ -454,7 +454,7 @@ export default function Home() {
         setActiveApp(null);
         setActiveSlide(null);
         setActiveVibe(null);
-        setShowBelievers(false);
+        setShowBacked(false);
         setShowHelp(false);
         setShowFund(null);
         setShowTeam(false);
@@ -590,12 +590,12 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── Believers sheet ── */}
-      {showBelievers && (
+      {/* ── Backed sheet ── */}
+      {showBacked && (
         <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex flex-col">
           <div className="flex items-center justify-between px-4 pt-12 pb-4 border-b border-white/10 shrink-0">
             <button
-              onClick={() => setShowBelievers(false)}
+              onClick={() => setShowBacked(false)}
               className="text-white/60 hover:text-white transition-colors"
             >
               <svg
@@ -607,7 +607,7 @@ export default function Home() {
                 <path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" />
               </svg>
             </button>
-            <span className="font-bold text-base text-white">Believers ($)</span>
+            <span className="font-bold text-base text-white">Backed</span>
             <div className="w-6" />
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -774,13 +774,13 @@ export default function Home() {
               <div className="text-xs text-white/50">Apps</div>
             </div>
             <button
-              onClick={() => setShowBelievers(true)}
+              onClick={() => setShowBacked(true)}
               className="flex flex-col items-center hover:opacity-70 transition-opacity"
             >
               <div className="font-black text-lg leading-tight">
                 {BACKERS.length}
               </div>
-              <div className="text-xs text-white/50">Believers</div>
+              <div className="text-xs text-white/50">Backed</div>
             </button>
             <button
               onClick={() => setShowTeam(true)}
@@ -836,7 +836,7 @@ export default function Home() {
           </div>
 
           {/* Backed by social proof */}
-          <button onClick={() => setShowBelievers(true)} className="flex items-center gap-2 mt-3 text-left w-full">
+          <button onClick={() => setShowBacked(true)} className="flex items-center gap-2 mt-3 text-left w-full">
             <div className="flex -space-x-2 shrink-0">
               {BACKED_BY.map((b) =>
                 b.img ? (
