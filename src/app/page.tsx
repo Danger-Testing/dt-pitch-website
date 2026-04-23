@@ -945,7 +945,7 @@ export default function Home() {
               <button
                 key={app.id}
                 onClick={() => setActiveApp(i)}
-                className="relative aspect-[9/16] overflow-hidden group"
+                className="relative aspect-[9/16] overflow-hidden group" style={{ background: "#111" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -972,7 +972,7 @@ export default function Home() {
                 <button
                   key={v.id}
                   onClick={() => v.src.type === "link" ? window.open(v.src.url, "_blank") : setActiveVibe(i)}
-                  className="relative aspect-[9/16] overflow-hidden group bg-black"
+                  className="relative aspect-[9/16] overflow-hidden group" style={{ background: "#111" }}
                 >
                   {v.src.type === "youtube" ? (
                     // eslint-disable-next-line @next/next/no-img-element
