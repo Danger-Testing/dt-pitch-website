@@ -41,6 +41,8 @@ const VIBES: {
   { id: "v1", title: "us before our pre-seed", src: { type: "local", file: "/1.mp4" } },
   { id: "v2", title: "appstar launch", src: { type: "local", file: "/2.mp4" } },
   { id: "v6", title: "los on stage", src: { type: "local", file: "/chapelle.webm" } },
+  { id: "v7", title: "mike wing", src: { type: "local", file: "/scrape.mp4" } },
+  { id: "v8", title: "distribution anxiety", src: { type: "local", file: "/boysclub.mp4" } },
   { id: "v4", title: "writing: creation becomes consumption", src: { type: "link", url: "https://marcgmbh.substack.com/p/creation-becomes-consumption", thumb: "/splash1.jpeg" } },
   { id: "v5", title: "writing: aspirational software", src: { type: "link", url: "https://marcgmbh.substack.com/p/aspirational-software", thumb: "/aspirational.jpg" } },
 ];
@@ -321,6 +323,37 @@ const APPS = [
   { id: 33, name: "dangertesting.com",    desc: "The mothership.",                                                       url: "https://dangertesting.com",             img: `${D}image.png` },
 ];
 
+const WARHOL_SECTIONS = [
+  {
+    title: "ADVERTISERS",
+    entries: [
+      { name: "Tech CEO",       image: "/ceo.png",       audio: "/ceo.mp3" },
+      { name: "Marketing Team", image: "/marketing.png", audio: "/marketing.mp3" },
+      { name: "Danger Testing", image: "/logo.jpg",      audio: null },
+    ],
+  },
+  {
+    title: "TALENT",
+    entries: [
+      { name: "Tech CEO",       image: "/ceo.png",       audio: "/talent.mp3" },
+      { name: "Danger Testing", image: "/logo.jpg",      audio: null },
+    ],
+  },
+  {
+    title: "APPS",
+    entries: [
+      { name: null, image: null, audio: null, quote: "If anyone can spin up google docs I will pay $50 for a henrik karlson substack skin" },
+    ],
+  },
+];
+
+function formatTime(s: number) {
+  if (!s || isNaN(s)) return "0:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
 export default function Home() {
   const [activeApp, setActiveApp] = useState<number | null>(null);
   const [activeSlide, setActiveSlide] = useState<number | null>(null);
@@ -328,9 +361,31 @@ export default function Home() {
   const [showFund, setShowFund] = useState<number | null>(null);
   const [showBelievers, setShowBelievers] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
-  const [activeTab, setActiveTab] = useState<"pitch" | "apps" | "vibes" | "social">("pitch");
+  const [showWarhol, setShowWarhol] = useState(false);
+  const warholAudioCache = useRef<Record<string, HTMLAudioElement>>({});
+  const warholCurrentAudio = useRef<HTMLAudioElement | null>(null);
+
+  const playWarholSound = useCallback((src: string) => {
+    if (warholCurrentAudio.current && warholCurrentAudio.current !== warholAudioCache.current[src]) {
+      warholCurrentAudio.current.pause();
+      warholCurrentAudio.current.currentTime = 0;
+    }
+    if (!warholAudioCache.current[src]) {
+      warholAudioCache.current[src] = new Audio(src);
+    }
+    const el = warholAudioCache.current[src];
+    el.currentTime = 0;
+    el.play().catch(() => {});
+    warholCurrentAudio.current = el;
+  }, []);
+  const [activeTab, setActiveTab] = useState<"pitch" | "apps" | "vibes">("pitch");
   const [activeVibe, setActiveVibe] = useState<number | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [ipoPlaying, setIpoPlaying] = useState(false);
+  const [ipoFast, setIpoFast] = useState(false);
+  const [ipoCurrentTime, setIpoCurrentTime] = useState(0);
+  const [ipoDuration, setIpoDuration] = useState(0);
+  const ipoAudioRef = useRef<HTMLAudioElement | null>(null);
   const [feedSlide, setFeedSlide] = useState(0);
   const [feedApp, setFeedApp] = useState(0);
   const [feedVibe, setFeedVibe] = useState(0);
@@ -373,6 +428,13 @@ export default function Home() {
     }
   }, [activeVibe !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (!showHelp && ipoAudioRef.current) {
+      ipoAudioRef.current.pause();
+      setIpoPlaying(false);
+    }
+  }, [showHelp]);
+
   const onSlideFeedScroll = useCallback(() => {
     const el = slideFeedRef.current;
     if (el) setFeedSlide(Math.round(el.scrollTop / el.clientHeight));
@@ -396,6 +458,7 @@ export default function Home() {
         setShowHelp(false);
         setShowFund(null);
         setShowTeam(false);
+        setShowWarhol(false);
       }
       if (activeApp !== null) {
         if (e.key === "ArrowRight" || e.key === "ArrowDown")
@@ -628,6 +691,59 @@ export default function Home() {
         </div>
       )}
 
+      {/* ── Warhol's Factory sheet ── */}
+      {showWarhol && (
+        <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex flex-col">
+          <div className="flex items-center justify-between px-4 pt-12 pb-4 border-b border-white/10 shrink-0">
+            <button onClick={() => setShowWarhol(false)} className="text-white/60 hover:text-white transition-colors">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" />
+              </svg>
+            </button>
+            <span className="font-bold text-base text-white">Warhol&apos;s Factory</span>
+            <div className="w-6" />
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {WARHOL_SECTIONS.map((section) => (
+              <div key={section.title}>
+                <div className="px-4 pt-5 pb-2">
+                  <span className="text-[#f5e642] text-xs font-bold tracking-widest uppercase">{section.title}</span>
+                </div>
+                {section.entries.map((entry, i) => {
+                  if ("quote" in entry && entry.quote) {
+                    return (
+                      <div key={i} className="mx-4 mb-3 bg-white/5 rounded-xl px-4 py-4 border border-white/10">
+                        <p className="text-white/70 text-sm leading-relaxed italic">&ldquo;{entry.quote}&rdquo;</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-4 px-4 py-4 border-b border-white/5 transition-colors ${entry.audio ? "hover:bg-white/5 active:bg-white/10 cursor-pointer" : ""}`}
+                      onClick={() => entry.audio && playWarholSound(entry.audio)}
+                    >
+                      {entry.image && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={entry.image} alt={entry.name ?? ""} className="w-12 h-12 rounded-full object-cover shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm text-white">{entry.name}</div>
+                      </div>
+                      {entry.audio && (
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Profile page ── */}
       <div className="w-full max-w-[430px] bg-black text-white min-h-screen flex flex-col">
         {/* Profile info */}
@@ -645,7 +761,7 @@ export default function Home() {
               <h1 className="font-black text-xl leading-tight">
                 Danger Testing
               </h1>
-              <p className="text-sm text-white/60">@dangertesting</p>
+              <a href="https://dangertesting.com" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-white/80 transition-colors">dangertesting.com</a>
             </div>
           </div>
 
@@ -707,15 +823,15 @@ export default function Home() {
             >
               Message
             </button>
-            <button className="border border-white/20 text-white px-3 py-2 rounded-md hover:bg-white/10 transition-colors">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
-              </svg>
+            <button
+              onClick={() => {
+                const url = window.location.href;
+                if (navigator.share) navigator.share({ title: "Danger Testing", url }).catch(() => {});
+                else navigator.clipboard?.writeText(url).catch(() => {});
+              }}
+              className="border border-white/20 text-white px-3 py-2 rounded-md hover:bg-white/10 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
             </button>
           </div>
 
@@ -757,7 +873,7 @@ export default function Home() {
 
         {/* Tabs */}
         <div className="flex border-b border-white/10">
-          {(["pitch", "apps", "vibes", "social"] as const).map((tab) => (
+          {(["pitch", "apps", "vibes"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -766,7 +882,6 @@ export default function Home() {
               {tab === "pitch" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>}
               {tab === "apps" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>}
               {tab === "vibes" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>}
-              {tab === "social" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>}
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
@@ -869,31 +984,6 @@ export default function Home() {
               ))}
             </div>
           )
-        ) : activeTab === "social" ? (
-          <div className="flex flex-col gap-0 pb-6">
-            {SOCIAL.map((post) => (
-              <div key={post.id} className="border-b border-white/5">
-                {post.type === "tiktok" ? (
-                  <div className="relative w-full" style={{ paddingBottom: "177.7%" }}>
-                    <iframe
-                      src={`https://www.tiktok.com/embed/v2/${post.videoId}`}
-                      className="absolute inset-0 w-full h-full"
-                      allow="autoplay; encrypted-media"
-                      style={{ border: "none" }}
-                    />
-                  </div>
-                ) : (
-                  <div className="relative w-full" style={{ minHeight: "800px" }}>
-                    <iframe
-                      src={`https://platform.twitter.com/embed/Tweet.html?id=${post.tweetId}&theme=dark&dnt=true`}
-                      className="w-full"
-                      style={{ border: "none", height: "800px" }}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
         ) : null}
 
         {/* Vibe feed */}
@@ -957,11 +1047,89 @@ export default function Home() {
             <div className="relative bg-[#1c1c1e] rounded-t-3xl px-6 pt-5 pb-10">
               <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-6" />
               <p className="text-white text-lg font-semibold leading-relaxed mb-6">
-                Need help convincing you partners to invest?
+                Need help convincing your partners to invest? Make them manifest.
               </p>
+              <div className="flex gap-6 justify-center mb-6">
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      if (!ipoAudioRef.current) {
+                        const audio = new Audio("/ipo.mp3");
+                        audio.onended = () => { setIpoPlaying(false); setIpoCurrentTime(0); new Audio("/bell.mp3").play().catch(() => {}); };
+                        audio.ontimeupdate = () => setIpoCurrentTime(audio.currentTime);
+                        audio.onloadedmetadata = () => setIpoDuration(audio.duration);
+                        ipoAudioRef.current = audio;
+                      }
+                      ipoAudioRef.current.playbackRate = ipoFast ? 1.5 : 1;
+                      if (ipoPlaying) {
+                        ipoAudioRef.current.pause();
+                        setIpoPlaying(false);
+                      } else {
+                        ipoAudioRef.current.play().catch(() => {});
+                        setIpoPlaying(true);
+                      }
+                    }}
+                    className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  >
+                    {ipoPlaying ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                    )}
+                  </button>
+                  <span className="text-xs text-white/50">Play</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      const url = window.location.origin + "/ipo.mp3";
+                      navigator.clipboard?.writeText(url).catch(() => {});
+                    }}
+                    className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+                  </button>
+                  <span className="text-xs text-white/50">Share</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      const next = !ipoFast;
+                      setIpoFast(next);
+                      if (ipoAudioRef.current) ipoAudioRef.current.playbackRate = next ? 1.5 : 1;
+                    }}
+                    className={`w-14 h-14 rounded-full border flex items-center justify-center transition-colors font-black text-sm ${ipoFast ? "bg-white text-black border-white" : "bg-white/10 border-white/20 text-white"}`}
+                  >
+                    1.5×
+                  </button>
+                  <span className="text-xs text-white/50">Speed</span>
+                </div>
+              </div>
+              {/* Timeline */}
+              <div className="mb-4">
+                <div
+                  className="w-full h-1 bg-white/15 rounded-full overflow-hidden cursor-pointer"
+                  onClick={(e) => {
+                    if (!ipoAudioRef.current || !ipoDuration) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const ratio = (e.clientX - rect.left) / rect.width;
+                    ipoAudioRef.current.currentTime = ratio * ipoDuration;
+                    setIpoCurrentTime(ipoAudioRef.current.currentTime);
+                  }}
+                >
+                  <div
+                    className="h-full bg-white rounded-full transition-none"
+                    style={{ width: `${ipoDuration ? (ipoCurrentTime / ipoDuration) * 100 : 0}%` }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-xs text-white/30">{formatTime(ipoCurrentTime)}</span>
+                  <span className="text-xs text-white/30">{formatTime(ipoDuration)}</span>
+                </div>
+              </div>
               <button
                 onClick={() => setShowHelp(false)}
-                className="w-full mt-3 text-white/40 text-sm py-2"
+                className="w-full text-white/40 text-sm py-2"
               >
                 Dismiss
               </button>
