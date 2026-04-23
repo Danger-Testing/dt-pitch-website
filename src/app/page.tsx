@@ -283,7 +283,7 @@ const SLIDES = [
 ];
 
 // ─── App drops from Notion ────────────────────────────────────────────────────
-const D = "/danger%20testing%20drops/";
+const D = "/Danger%20Testing%20Drops/";
 const APPS = [
   { id: 0,  name: "BIEBERCHELLA",        desc: "We made a website to control the screen behind Bieber at Coachella.", url: "https://bieberchella.appstar.world/",   tweet: "https://x.com/immike_wing/status/2043507113159225835", img: `${D}Screenshot_2026-04-21_at_17.14.22.png` },
   { id: 1,  name: "Frutiger Zero",        desc: "Make frutiger aero websites.",                                         url: null,                                     tweet: "https://x.com/marcgmbh/status/2030025914378051892",   img: `${D}Screenshot_2026-04-21_at_18.54.52.png` },
