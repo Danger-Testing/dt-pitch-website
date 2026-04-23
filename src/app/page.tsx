@@ -385,7 +385,7 @@ export default function Home() {
     el.play().catch(() => {});
     warholCurrentAudio.current = el;
   }, []);
-  const [activeTab, setActiveTab] = useState<"pitch" | "apps" | "vibes">("pitch");
+  const [activeTab, setActiveTab] = useState<"deck" | "apps" | "vibes">("deck");
   const [activeVibe, setActiveVibe] = useState<number | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const [ipoPlaying, setIpoPlaying] = useState(false);
@@ -893,13 +893,13 @@ export default function Home() {
 
         {/* Tabs */}
         <div className="flex border-b border-white/10">
-          {(["pitch", "apps", "vibes"] as const).map((tab) => (
+          {(["deck", "apps", "vibes"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-3 text-xs font-semibold flex items-center justify-center gap-1 transition-colors ${activeTab === tab ? "border-b-2 border-white text-white" : "text-white/40"}`}
             >
-              {tab === "pitch" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>}
+              {tab === "deck" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>}
               {tab === "apps" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>}
               {tab === "vibes" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>}
               {tab === "vibes" ? "Danger" : tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -908,7 +908,7 @@ export default function Home() {
         </div>
 
         {/* Grid */}
-        {activeTab === "pitch" ? (
+        {activeTab === "deck" ? (
           <div>
             {pdfLoading && (
               <div className="h-0.5 bg-white/10 overflow-hidden">
@@ -954,8 +954,8 @@ export default function Home() {
                   className="absolute inset-0 w-full h-full object-contain transition-transform group-hover:scale-105 duration-300"
                 />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
-                <div className="absolute z-10 bg-white px-2 py-1" style={{ top: "10%", left: "10%", right: "10%", borderRadius: "12px" }}>
-                  <span className="text-black font-bold" style={{ fontSize: "11px", lineHeight: "0.75" }}>{app.name}</span>
+                <div style={{ position: "absolute", bottom: "15%", left: "50%", transform: "translateX(-50%)", width: "fit-content", maxWidth: "85%", background: "white", borderRadius: "10px", padding: "5px 8px", textAlign: "center", zIndex: 10 }}>
+                  <span style={{ color: "black", fontWeight: "bold", fontSize: "10px", lineHeight: "1", display: "block" }}>{app.name}</span>
                 </div>
               </button>
             ))}
@@ -988,8 +988,8 @@ export default function Home() {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                  <div className="absolute z-10 bg-white px-3 py-1.5 rounded" style={{ top: "5%", left: "15%", right: "15%", borderRadius: "12px" }}>
-                    <span className="text-black font-bold" style={{ fontSize: "13px", lineHeight: "0.75" }}>{v.title}</span>
+                  <div style={{ position: "absolute", bottom: "15%", left: "50%", transform: "translateX(-50%)", width: "fit-content", maxWidth: "85%", background: "white", borderRadius: "10px", padding: "5px 8px", textAlign: "center", zIndex: 10 }}>
+                    <span style={{ color: "black", fontWeight: "bold", fontSize: "11px", lineHeight: "1", display: "block" }}>{v.title}</span>
                   </div>
                   {v.src.type !== "link" && (
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
