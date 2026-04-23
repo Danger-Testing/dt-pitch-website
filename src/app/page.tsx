@@ -954,10 +954,8 @@ export default function Home() {
                   className="absolute inset-0 w-full h-full object-contain transition-transform group-hover:scale-105 duration-300"
                 />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
-                <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1 bg-gradient-to-t from-black/70 to-transparent">
-                  <span className="text-white text-xs font-bold leading-tight line-clamp-1">
-                    {app.name}
-                  </span>
+                <div className="absolute z-10 bg-white px-3 py-1.5" style={{ top: "5%", left: "15%", right: "15%", borderRadius: "12px" }}>
+                  <span className="text-black text-sm font-bold" style={{ lineHeight: "9px" }}>{app.name}</span>
                 </div>
               </button>
             ))}
