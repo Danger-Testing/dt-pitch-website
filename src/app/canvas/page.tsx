@@ -120,7 +120,7 @@ function DialogSheet({ onClose, playSound }: { onClose: () => void; playSound: (
               </h2>
               <div className="space-y-3">
                 {section.entries.map((entry, i) => {
-                  if (entry.quote) {
+                  if ("quote" in entry && entry.quote) {
                     return (
                       <div key={i} className="bg-zinc-900 rounded-xl px-4 py-4">
                         <p className="text-white text-sm leading-relaxed italic">&ldquo;{entry.quote}&rdquo;</p>
