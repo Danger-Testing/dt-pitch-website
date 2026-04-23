@@ -1029,13 +1029,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* ? button — inside phone column, fixed within its width */}
-        <button
-          onClick={() => setShowHelp(true)}
-          className="fixed bottom-6 right-[max(1rem,calc((100vw-430px)/2+1rem))] w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-white font-black text-sm flex items-center justify-center hover:bg-white/20 transition-colors z-30"
-        >
-          ?
-        </button>
 
         {/* Help popup */}
         {showHelp && (
