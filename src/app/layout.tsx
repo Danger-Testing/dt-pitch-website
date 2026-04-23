@@ -13,8 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Danger Testing — Seed Round 2026",
-  description: "AI-powered chaos testing. We break things so you don't have to.",
+  title: "Danger Testing Seed",
+  openGraph: {
+    title: "Danger Testing Seed",
+  },
 };
 
 export default function RootLayout({
