@@ -1,8 +1,35 @@
 "use client";
 
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 
-const PDF_URL = "/Danger%20Testing%20Drops/danger-testing-deck.pdf";
+// Autoplay video when scrolled into view
+function FeedVideo({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) el.play().catch(() => {});
+        else { el.pause(); el.currentTime = 0; }
+      },
+      { threshold: 0.6 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <video
+      ref={ref}
+      src={src}
+      className="absolute inset-0 w-full h-full object-contain"
+      playsInline
+      loop
+    />
+  );
+}
+
+const PDF_URL = "/seed.pdf";
 
 // ─── Vibes — add YouTube IDs or local filenames here ─────────────────────────
 const VIBES: {
@@ -16,6 +43,22 @@ const VIBES: {
   { id: "v6", title: "los on stage", src: { type: "local", file: "/chapelle.webm" } },
   { id: "v4", title: "writing: creation becomes consumption", src: { type: "link", url: "https://marcgmbh.substack.com/p/creation-becomes-consumption", thumb: "/splash1.jpeg" } },
   { id: "v5", title: "writing: aspirational software", src: { type: "link", url: "https://marcgmbh.substack.com/p/aspirational-software", thumb: "/aspirational.jpg" } },
+];
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Social posts ─────────────────────────────────────────────────────────────
+const SOCIAL: ({ id: string; type: "tiktok"; videoId: string; url: string } | { id: string; type: "tweet"; tweetId: string; url: string })[] = [
+  { id: "s7",  type: "tweet", tweetId: "2037196888273740036", url: "https://x.com/immike_wing/status/2037196888273740036" },
+  { id: "s9",  type: "tweet", tweetId: "1971233995183595533", url: "https://x.com/lee94josh/status/1971233995183595533" },
+  { id: "s10", type: "tweet", tweetId: "1958634778275594323", url: "https://x.com/gentlycarved/status/1958634778275594323" },
+  { id: "s11", type: "tweet", tweetId: "2042606196960481483", url: "https://x.com/BoysClubWorld/status/2042606196960481483" },
+  { id: "s12", type: "tweet", tweetId: "1976774451447709921", url: "https://x.com/ekuyda/status/1976774451447709921" },
+  { id: "s1",  type: "tiktok", videoId: "7558144575517297951", url: "https://www.tiktok.com/@loslayup/video/7558144575517297951" },
+  { id: "s2",  type: "tiktok", videoId: "7575567271750290719", url: "https://www.tiktok.com/@loslayup/video/7575567271750290719" },
+  { id: "s6",  type: "tweet", tweetId: "2002033165636886946", url: "https://x.com/marcgmbh/status/2002033165636886946" },
+  { id: "s4",  type: "tweet", tweetId: "2027153592465920511", url: "https://x.com/marcgmbh/status/2027153592465920511" },
+  { id: "s3",  type: "tweet", tweetId: "1996969823104839863", url: "https://x.com/marcgmbh/status/1996969823104839863" },
+  { id: "s8",  type: "tweet", tweetId: "2030025914378051892", url: "https://x.com/marcgmbh/status/2030025914378051892" },
 ];
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -282,14 +325,18 @@ export default function Home() {
   const [activeApp, setActiveApp] = useState<number | null>(null);
   const [activeSlide, setActiveSlide] = useState<number | null>(null);
   const [liked, setLiked] = useState<Set<number>>(new Set());
-  const [showFund, setShowFund] = useState(false);
+  const [showFund, setShowFund] = useState<number | null>(null);
   const [showBelievers, setShowBelievers] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
-  const [activeTab, setActiveTab] = useState<"pitch" | "apps" | "vibes">(
-    "pitch",
-  );
+  const [activeTab, setActiveTab] = useState<"pitch" | "apps" | "vibes" | "social">("pitch");
   const [activeVibe, setActiveVibe] = useState<number | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [feedSlide, setFeedSlide] = useState(0);
+  const [feedApp, setFeedApp] = useState(0);
+  const [feedVibe, setFeedVibe] = useState(0);
+  const slideFeedRef = useRef<HTMLDivElement>(null);
+  const appFeedRef = useRef<HTMLDivElement>(null);
+  const vibeFeedRef = useRef<HTMLDivElement>(null);
   const {
     pages: pdfPages,
     numPages,
@@ -299,6 +346,46 @@ export default function Home() {
   const slideCountRef = useRef(slideCount);
   slideCountRef.current = slideCount;
 
+  // Scroll feed to initial index when opened
+  useEffect(() => {
+    if (activeSlide !== null && slideFeedRef.current) {
+      const el = slideFeedRef.current;
+      setFeedSlide(activeSlide);
+      requestAnimationFrame(() => { el.scrollTo({ top: activeSlide * el.clientHeight, behavior: "instant" }); });
+    }
+  }, [activeSlide !== null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (activeApp !== null && appFeedRef.current) {
+      const el = appFeedRef.current;
+      setFeedApp(activeApp);
+      requestAnimationFrame(() => { el.scrollTo({ top: activeApp * el.clientHeight, behavior: "instant" }); });
+    }
+  }, [activeApp !== null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (activeVibe !== null && vibeFeedRef.current) {
+      const el = vibeFeedRef.current;
+      const feedIdx = VIBES.filter(v => v.src.type !== "link").findIndex((_, idx) => idx === activeVibe);
+      const idx = feedIdx >= 0 ? feedIdx : 0;
+      setFeedVibe(idx);
+      requestAnimationFrame(() => { el.scrollTo({ top: idx * el.clientHeight, behavior: "instant" }); });
+    }
+  }, [activeVibe !== null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onSlideFeedScroll = useCallback(() => {
+    const el = slideFeedRef.current;
+    if (el) setFeedSlide(Math.round(el.scrollTop / el.clientHeight));
+  }, []);
+  const onAppFeedScroll = useCallback(() => {
+    const el = appFeedRef.current;
+    if (el) setFeedApp(Math.round(el.scrollTop / el.clientHeight));
+  }, []);
+  const onVibeFeedScroll = useCallback(() => {
+    const el = vibeFeedRef.current;
+    if (el) setFeedVibe(Math.round(el.scrollTop / el.clientHeight));
+  }, []);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -307,7 +394,7 @@ export default function Home() {
         setActiveVibe(null);
         setShowBelievers(false);
         setShowHelp(false);
-        setShowFund(false);
+        setShowFund(null);
         setShowTeam(false);
       }
       if (activeApp !== null) {
@@ -329,252 +416,113 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handler);
   }, [activeApp, activeSlide]);
 
-  const app = activeApp !== null ? APPS[activeApp] : null;
-
   return (
     <div className="min-h-screen bg-neutral-900 flex justify-center font-sans select-none">
-      {/* ── Full-screen slide viewer ── */}
+      {/* ── Pitch feed ── */}
       {activeSlide !== null && (
         <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex flex-col">
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-4 pt-12 pb-3 shrink-0">
-            <button
-              onClick={() => setActiveSlide(null)}
-              className="text-white/70 hover:text-white"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" />
-              </svg>
+          <div className="flex items-center justify-between px-4 pt-12 pb-3 shrink-0 z-10">
+            <button onClick={() => setActiveSlide(null)} className="text-white/70 hover:text-white">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
             </button>
-            <span className="text-xs font-semibold text-white/50">
-              {activeSlide + 1} / {slideCount}
-            </span>
+            <span className="text-xs font-semibold text-white/50">{feedSlide + 1} / {slideCount}</span>
             <div className="w-6" />
           </div>
-          {/* Slide image */}
-          <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-            {pdfPages[activeSlide] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={pdfPages[activeSlide]}
-                alt={`Slide ${activeSlide + 1}`}
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <div
-                className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${SLIDES[activeSlide]?.bg ?? "from-slate-800 to-slate-900"}`}
-              >
-                <div className="flex flex-col items-center gap-4 text-white">
-                  <div className="text-5xl">{SLIDES[activeSlide]?.emoji}</div>
-                  <div className="w-8 h-8 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                </div>
+          <div
+            ref={slideFeedRef}
+            onScroll={onSlideFeedScroll}
+            className="flex-1 overflow-y-scroll snap-y snap-mandatory"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {Array.from({ length: Math.max(slideCount, 1) }).map((_, i) => (
+              <div key={i} className="h-full snap-start shrink-0 flex items-center justify-center bg-black">
+                {pdfPages[i] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={pdfPages[i]} alt={`Slide ${i + 1}`} className="w-full h-full object-contain" />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-br ${SLIDES[i]?.bg ?? "from-slate-800 to-slate-900"}`} />
+                )}
               </div>
-            )}
-            {/* Tap zones */}
-            <button
-              className="absolute left-0 inset-y-0 w-1/2 z-10"
-              onClick={() => setActiveSlide((p) => Math.max((p ?? 0) - 1, 0))}
-            />
-            <button
-              className="absolute right-0 inset-y-0 w-1/2 z-10"
-              onClick={() =>
-                setActiveSlide((p) => Math.min((p ?? 0) + 1, slideCount - 1))
-              }
-            />
-          </div>
-          {/* Progress bar */}
-          <div className="flex gap-0.5 px-4 py-3 shrink-0">
-            {Array.from({ length: slideCount }).map((_, i) => (
-              <div
-                key={i}
-                className={`h-0.5 flex-1 rounded-full transition-all ${i === activeSlide ? "bg-white" : "bg-white/25"}`}
-              />
             ))}
           </div>
         </div>
       )}
 
-      {/* ── Full-screen app viewer ── */}
-      {app !== null && (
-        <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex items-stretch">
-          <div className="relative flex-1 overflow-hidden bg-black">
-            {/* Progress dots */}
-            <div className="absolute top-0 left-0 right-0 z-10 flex gap-0.5 px-3 pt-4">
-              {APPS.map((a, i) => (
-                <div
-                  key={a.id}
-                  className={`h-0.5 flex-1 rounded-full transition-all ${i === activeApp ? "bg-white" : "bg-white/25"}`}
-                />
-              ))}
-            </div>
-
-            {/* Top bar */}
-            <div className="absolute top-6 left-0 right-0 z-10 flex items-center justify-between px-4 pt-2">
-              <button
-                onClick={() => setActiveApp(null)}
-                className="text-white/80 hover:text-white transition-colors"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" />
-                </svg>
-              </button>
-              <span className="text-xs font-semibold text-white/60">
-                {(activeApp ?? 0) + 1} / {APPS.length}
-              </span>
-              {app.url ? (
-                <a
-                  href={app.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/80 hover:text-white transition-colors"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
-                  </svg>
-                </a>
-              ) : (
-                <div className="w-6" />
-              )}
-            </div>
-
-            {/* Screenshot */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={app.img}
-              alt={app.name}
-              className="absolute inset-0 w-full h-full object-contain"
-            />
-
-            {/* Fund overlay — shown when Like is tapped */}
-            {showFund && (
-              <div
-                className="absolute inset-0 flex items-center justify-center z-20"
-                onClick={() => setShowFund(false)}
-              >
-                <a
-                  href="/wire.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="bg-[#fe2c55] text-white font-black text-base px-8 py-4 rounded-full shadow-2xl"
-                >
-                  Invest ↗
-                </a>
-              </div>
-            )}
-
-            {/* Bottom overlay */}
-            <div className="absolute bottom-0 left-0 right-0 px-4 pb-6 pt-24 bg-gradient-to-t from-black/80 to-transparent z-10">
-              <div className="flex items-center gap-2 mb-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logo.jpg"
-                  alt="Danger Testing"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <span className="font-bold text-sm">@dangertesting</span>
-                <span className="text-xs border border-white/40 rounded px-2 py-0.5 ml-1">
-                  Follow
-                </span>
-              </div>
-              <h3 className="text-lg font-black leading-tight">{app.name}</h3>
-              <p className="text-sm opacity-80 mt-1 leading-relaxed">
-                {app.desc}
-              </p>
-              {app.url && (
-                <a
-                  href={app.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-block bg-white text-black px-4 py-2 rounded-full text-xs font-black"
-                >
-                  Open ↗
-                </a>
-              )}
-            </div>
-
-            {/* Tap zones */}
-            <button
-              className="absolute left-0 top-12 bottom-32 w-1/3 z-20"
-              onClick={() => setActiveApp((p) => Math.max((p ?? 0) - 1, 0))}
-            />
-            <button
-              className="absolute right-14 top-12 bottom-32 w-1/3 z-20"
-              onClick={() =>
-                setActiveApp((p) => Math.min((p ?? 0) + 1, APPS.length - 1))
-              }
-            />
+      {/* ── Apps feed ── */}
+      {activeApp !== null && (
+        <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex flex-col">
+          {/* Fixed top bar */}
+          <div className="flex items-center justify-between px-4 pt-12 pb-2 shrink-0 z-20">
+            <button onClick={() => setActiveApp(null)} className="text-white/80 hover:text-white">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
+            </button>
+            <span className="text-xs font-semibold text-white/60">{feedApp + 1} / {APPS.length}</span>
+            <div className="w-6" />
           </div>
-
-          {/* Right sidebar */}
-          <div className="w-14 flex flex-col items-center justify-end gap-5 pb-8 bg-black">
-            <div className="flex flex-col items-center gap-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.jpg"
-                alt="Danger Testing"
-                className="w-10 h-10 rounded-full object-cover border-2 border-black"
-              />
-              <div className="w-5 h-5 rounded-full bg-[#fe2c55] flex items-center justify-center -mt-3">
-                <span className="text-white text-xs font-black">+</span>
+          {/* Scroll feed */}
+          <div
+            ref={appFeedRef}
+            onScroll={onAppFeedScroll}
+            className="flex-1 overflow-y-scroll snap-y snap-mandatory"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {APPS.map((a, i) => (
+              <div key={a.id} className="h-full snap-start shrink-0 flex items-stretch">
+                {/* Main */}
+                <div className="relative flex-1 overflow-hidden bg-black">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={a.img} alt={a.name} className="absolute inset-0 w-full h-full object-contain" />
+                  {/* Invest overlay */}
+                  {showFund === i && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20" onClick={() => setShowFund(null)}>
+                      <a href="/wire.pdf" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="bg-[#fe2c55] text-white font-black text-base px-8 py-4 rounded-full shadow-2xl">Invest ↗</a>
+                    </div>
+                  )}
+                  {/* Bottom overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 px-4 pb-6 pt-24 bg-gradient-to-t from-black/80 to-transparent z-10">
+                    <h3 className="text-lg font-black leading-tight">{a.name}</h3>
+                    <p className="text-sm opacity-80 mt-1 leading-snug">{a.desc}</p>
+                    {a.url && (
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block bg-white text-black px-4 py-2 rounded-full text-xs font-black">Open ↗</a>
+                    )}
+                  </div>
+                </div>
+                {/* Sidebar */}
+                <div className="w-14 flex flex-col items-center justify-end gap-5 pb-8 bg-black shrink-0">
+                  <div className="flex flex-col items-center gap-1">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo.jpg" alt="DT" className="w-10 h-10 rounded-full object-cover border-2 border-black" />
+                    <div className="w-5 h-5 rounded-full bg-[#fe2c55] flex items-center justify-center -mt-3">
+                      <span className="text-white text-xs font-black">+</span>
+                    </div>
+                  </div>
+                  <button className="flex flex-col items-center gap-1" onClick={() => setShowFund(showFund === i ? null : i)}>
+                    <div className={`text-2xl transition-transform active:scale-125 ${liked.has(i) ? "text-[#fe2c55]" : ""}`}>❤️</div>
+                    <span className="text-xs text-white/70">Like</span>
+                  </button>
+                  <button className="flex flex-col items-center gap-1" onClick={() => {
+                    const shareUrl = a.url ?? a.tweet ?? window.location.href;
+                    if (navigator.share) navigator.share({ title: a.name, text: a.desc, url: shareUrl }).catch(() => {});
+                    else navigator.clipboard?.writeText(shareUrl).catch(() => {});
+                  }}>
+                    <div className="text-2xl">💬</div>
+                    <span className="text-xs text-white/70">Share</span>
+                  </button>
+                  {a.tweet && (
+                    <button className="flex flex-col items-center gap-1" onClick={() => window.open(a.tweet, "_blank")}>
+                      <div className="text-2xl">𝕏</div>
+                      <span className="text-xs text-white/70">View</span>
+                    </button>
+                  )}
+                  {a.url && (
+                    <a href={a.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1">
+                      <div className="text-2xl">↗️</div>
+                      <span className="text-xs text-white/70">Open</span>
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-            <button
-              className="flex flex-col items-center gap-1"
-              onClick={() => setShowFund((v) => !v)}
-            >
-              <div className="text-2xl transition-transform active:scale-125">❤️</div>
-              <span className="text-xs text-white/70">Like</span>
-            </button>
-            <button
-              className="flex flex-col items-center gap-1"
-              onClick={() => {
-                const shareUrl = app.url ?? app.tweet ?? window.location.href;
-                if (navigator.share) {
-                  navigator.share({ title: app.name, text: app.desc, url: shareUrl }).catch(() => {});
-                } else {
-                  navigator.clipboard?.writeText(shareUrl).catch(() => {});
-                }
-              }}
-            >
-              <div className="text-2xl">💬</div>
-              <span className="text-xs text-white/70">Share</span>
-            </button>
-            {app.tweet && (
-              <button
-                className="flex flex-col items-center gap-1"
-                onClick={() => window.open(app.tweet, "_blank")}
-              >
-                <div className="text-2xl">𝕏</div>
-                <span className="text-xs text-white/70">Tweet</span>
-              </button>
-            )}
-            {app.url && (
-              <a
-                href={app.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="text-2xl">↗️</div>
-                <span className="text-xs text-white/70">Open</span>
-              </a>
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -628,9 +576,6 @@ export default function Home() {
                     {b.title}
                   </div>
                 </div>
-                <button className="shrink-0 border border-white/20 text-white text-xs font-semibold px-4 py-1.5 rounded-md hover:bg-white/10 transition-colors">
-                  Follow
-                </button>
               </div>
             ))}
           </div>
@@ -695,9 +640,6 @@ export default function Home() {
                 alt="Danger Testing"
                 className="w-20 h-20 rounded-full object-cover"
               />
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#fe2c55] flex items-center justify-center">
-                <span className="text-white text-xs font-black">✓</span>
-              </div>
             </div>
             <div className="flex flex-col gap-1">
               <h1 className="font-black text-xl leading-tight">
@@ -815,42 +757,16 @@ export default function Home() {
 
         {/* Tabs */}
         <div className="flex border-b border-white/10">
-          {(["pitch", "apps", "vibes"] as const).map((tab) => (
+          {(["pitch", "apps", "vibes", "social"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors ${activeTab === tab ? "border-b-2 border-white text-white" : "text-white/40"}`}
+              className={`flex-1 py-3 text-xs font-semibold flex items-center justify-center gap-1 transition-colors ${activeTab === tab ? "border-b-2 border-white text-white" : "text-white/40"}`}
             >
-              {tab === "pitch" && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
-                </svg>
-              )}
-              {tab === "apps" && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" />
-                </svg>
-              )}
-              {tab === "vibes" && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                </svg>
-              )}
+              {tab === "pitch" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>}
+              {tab === "apps" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>}
+              {tab === "vibes" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>}
+              {tab === "social" && <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>}
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
@@ -858,42 +774,35 @@ export default function Home() {
 
         {/* Grid */}
         {activeTab === "pitch" ? (
-          <div className="grid grid-cols-3 gap-0.5">
-            {Array.from({ length: Math.max(slideCount, SLIDES.length) }).map(
-              (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveSlide(i)}
-                  className="relative aspect-[9/16] overflow-hidden group bg-black"
-                >
-                  {pdfPages[i] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={pdfPages[i]}
-                      alt={`Slide ${i + 1}`}
-                      className="absolute inset-0 w-full h-full object-contain transition-transform group-hover:scale-105 duration-300"
-                    />
-                  ) : (
-                    <>
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${SLIDES[i]?.bg ?? "from-slate-800 to-slate-900"} transition-transform group-hover:scale-105 duration-300`}
-                      />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-2">
-                        {pdfLoading && (
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
-                        )}
-                        {!pdfLoading && (
-                          <span className="text-2xl">{SLIDES[i]?.emoji}</span>
-                        )}
-                        <span className="text-white text-xs font-bold text-center leading-tight drop-shadow-lg">
-                          {SLIDES[i]?.label}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </button>
-              ),
+          <div>
+            {pdfLoading && (
+              <div className="h-0.5 bg-white/10 overflow-hidden">
+                <div className="h-full bg-white/60 animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: "40%", animation: "slide 1.5s ease-in-out infinite" }} />
+              </div>
             )}
+            <style>{`@keyframes slide { 0% { transform: translateX(-150%) } 100% { transform: translateX(350%) } }`}</style>
+            <div className="grid grid-cols-3 gap-0.5">
+              {Array.from({ length: Math.max(slideCount, SLIDES.length) }).map(
+                (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveSlide(i)}
+                    className="relative aspect-[9/16] overflow-hidden group bg-black"
+                  >
+                    {pdfPages[i] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={pdfPages[i]}
+                        alt={`Slide ${i + 1}`}
+                        className="absolute inset-0 w-full h-full object-contain transition-transform group-hover:scale-105 duration-300"
+                      />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${SLIDES[i]?.bg ?? "from-slate-800 to-slate-900"}`} />
+                    )}
+                  </button>
+                ),
+              )}
+            </div>
           </div>
         ) : activeTab === "apps" ? (
           <div className="grid grid-cols-3 gap-0.5">
@@ -960,39 +869,72 @@ export default function Home() {
               ))}
             </div>
           )
+        ) : activeTab === "social" ? (
+          <div className="flex flex-col gap-0 pb-6">
+            {SOCIAL.map((post) => (
+              <div key={post.id} className="border-b border-white/5">
+                {post.type === "tiktok" ? (
+                  <div className="relative w-full" style={{ paddingBottom: "177.7%" }}>
+                    <iframe
+                      src={`https://www.tiktok.com/embed/v2/${post.videoId}`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="autoplay; encrypted-media"
+                      style={{ border: "none" }}
+                    />
+                  </div>
+                ) : (
+                  <div className="relative w-full" style={{ minHeight: "800px" }}>
+                    <iframe
+                      src={`https://platform.twitter.com/embed/Tweet.html?id=${post.tweetId}&theme=dark&dnt=true`}
+                      className="w-full"
+                      style={{ border: "none", height: "800px" }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         ) : null}
 
-        {/* Vibe full-screen viewer */}
-        {activeVibe !== null && VIBES[activeVibe] && (
+        {/* Vibe feed */}
+        {activeVibe !== null && (
           <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex flex-col">
-            <div className="flex items-center justify-between px-4 pt-12 pb-3 shrink-0">
+            <div className="flex items-center justify-between px-4 pt-12 pb-2 shrink-0 z-20">
               <button onClick={() => setActiveVibe(null)} className="text-white/70 hover:text-white">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
               </button>
-              <span className="text-sm font-bold text-white">{VIBES[activeVibe].title}</span>
+              <span className="text-sm font-bold text-white">{VIBES[feedVibe]?.title}</span>
               <div className="w-6" />
             </div>
-            <div className="flex-1 relative bg-black">
-              {VIBES[activeVibe].src.type === "youtube" ? (
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${(VIBES[activeVibe].src as { type: "youtube"; videoId: string }).videoId}?autoplay=1&rel=0&playsinline=1`}
-                  className="absolute inset-0 w-full h-full"
-                  allow="autoplay; fullscreen"
-                  style={{ border: "none" }}
-                />
-              ) : VIBES[activeVibe].src.type === "local" ? (
-                <video
-                  src={(VIBES[activeVibe].src as { type: "local"; file: string }).file}
-                  className="absolute inset-0 w-full h-full object-contain"
-                  controls autoPlay playsInline
-                />
-              ) : (
-                <iframe
-                  src={(VIBES[activeVibe].src as { type: "link"; url: string }).url}
-                  className="absolute inset-0 w-full h-full bg-white"
-                  style={{ border: "none" }}
-                />
-              )}
+            <div
+              ref={vibeFeedRef}
+              onScroll={onVibeFeedScroll}
+              className="flex-1 overflow-y-scroll snap-y snap-mandatory"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {VIBES.filter(v => v.src.type !== "link").map((v, i) => (
+                <div key={v.id} className="h-full snap-start shrink-0 relative bg-black flex items-center justify-center">
+                  {v.src.type === "youtube" ? (
+                    feedVibe === i ? (
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${(v.src as { type: "youtube"; videoId: string }).videoId}?autoplay=1&rel=0&playsinline=1`}
+                        className="absolute inset-0 w-full h-full"
+                        allow="autoplay; fullscreen"
+                        style={{ border: "none" }}
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={`https://img.youtube.com/vi/${(v.src as { type: "youtube"; videoId: string }).videoId}/hqdefault.jpg`} alt={v.title} className="absolute inset-0 w-full h-full object-cover" />
+                    )
+                  ) : (
+                    <FeedVideo src={(v.src as { type: "local"; file: string }).file} />
+                  )}
+                  {/* Caption */}
+                  <div className="absolute bottom-8 left-4 right-4 z-10">
+                    <span className="text-white font-bold text-sm drop-shadow-lg">{v.title}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -1017,15 +959,6 @@ export default function Home() {
               <p className="text-white text-lg font-semibold leading-relaxed mb-6">
                 Need help convincing you partners to invest?
               </p>
-              <button
-                onClick={() => {
-                  window.open("https://youtube.com", "_blank");
-                  setShowHelp(false);
-                }}
-                className="w-full bg-[#fe2c55] text-white font-bold py-3.5 rounded-2xl text-sm hover:bg-[#e0264c] transition-colors"
-              >
-                Andy Weissman Calendly →
-              </button>
               <button
                 onClick={() => setShowHelp(false)}
                 className="w-full mt-3 text-white/40 text-sm py-2"
