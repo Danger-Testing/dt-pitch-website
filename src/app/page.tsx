@@ -813,17 +813,17 @@ export default function Home() {
 
           {/* Bio */}
           <p className="text-sm mt-4 leading-relaxed">
-            Dropping apps like songs.
+            Danger Testing is building the Warhol Factory for software.
             <br />
             47 apps. 60M+ views. 20k users.
             <br />
             <br />
-            Started as band shipping one app a week.
+            Started as a band, dropping apps like songs every week.
             <br />
             Now becoming the label, compounding talent and distribution.
             <br />
             <br />
-            Next is Appstar. Youtube for Apps.
+            Next is Appstar — the YouTube for apps.
           </p>
 
           {/* CTA buttons */}
