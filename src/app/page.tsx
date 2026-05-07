@@ -29,7 +29,7 @@ function FeedVideo({ src }: { src: string }) {
   );
 }
 
-const PDF_URL = "/seed.pdf";
+const PDF_URL = "/danger-testing-deck-seed.pdf?v=2026-05-06";
 
 // ─── Vibes — add YouTube IDs or local filenames here ─────────────────────────
 const VIBES: {
