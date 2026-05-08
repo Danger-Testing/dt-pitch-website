@@ -407,8 +407,6 @@ export default function Home() {
     loading: pdfLoading,
   } = usePdfPages(PDF_URL);
   const slideCount = numPages || SLIDES.length;
-  const slideCountRef = useRef(slideCount);
-  slideCountRef.current = slideCount;
 
   // Scroll feed to initial index when opened
   useEffect(() => {
@@ -457,6 +455,17 @@ export default function Home() {
     if (el) setFeedVibe(Math.round(el.scrollTop / el.clientHeight));
   }, []);
 
+  const goToSlide = useCallback((nextSlide: number) => {
+    const boundedSlide = Math.max(0, Math.min(nextSlide, slideCount - 1));
+    setActiveSlide(boundedSlide);
+    setFeedSlide(boundedSlide);
+
+    const el = slideFeedRef.current;
+    if (el) {
+      el.scrollTo({ top: boundedSlide * el.clientHeight, behavior: "smooth" });
+    }
+  }, [slideCount]);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -477,55 +486,72 @@ export default function Home() {
       }
       if (activeSlide !== null) {
         if (e.key === "ArrowRight" || e.key === "ArrowDown")
-          setActiveSlide((p) =>
-            Math.min((p ?? 0) + 1, slideCountRef.current - 1),
-          );
+          goToSlide(activeSlide + 1);
         if (e.key === "ArrowLeft" || e.key === "ArrowUp")
-          setActiveSlide((p) => Math.max((p ?? 0) - 1, 0));
+          goToSlide(activeSlide - 1);
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [activeApp, activeSlide]);
+  }, [activeApp, activeSlide, goToSlide]);
 
   return (
     <div className="min-h-screen bg-black flex justify-center font-sans select-none">
       {/* ── Pitch feed ── */}
       {activeSlide !== null && (
-        <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-black flex flex-col">
-          <div className="flex items-center justify-between px-4 pt-12 pb-3 shrink-0 z-10">
-            <button onClick={() => setActiveSlide(null)} className="text-white/70 hover:text-white">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
-            </button>
-            <span className="text-xs font-semibold text-white/50">{feedSlide + 1} / {slideCount}</span>
-            <div className="w-6" />
-          </div>
-          <div
-            ref={slideFeedRef}
-            onScroll={onSlideFeedScroll}
-            className="flex-1 overflow-y-scroll snap-y snap-mandatory"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {Array.from({ length: Math.max(slideCount, 1) }).map((_, i) => (
-              <div
-                key={i}
-                className="h-full snap-start shrink-0 flex items-center justify-center relative" style={{ background: "#111" }}
-                onClick={(e) => {
-                  const el = slideFeedRef.current;
-                  if (!el) return;
-                  const left = e.clientX < e.currentTarget.getBoundingClientRect().left + e.currentTarget.offsetWidth / 2;
-                  const next = left ? Math.max(i - 1, 0) : Math.min(i + 1, slideCount - 1);
-                  el.scrollTo({ top: next * el.clientHeight, behavior: "smooth" });
-                }}
-              >
-                {pdfPages[i] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={pdfPages[i]} alt={`Slide ${i + 1}`} className="w-full h-full object-contain" />
-                ) : (
-                  <div className={`w-full h-full bg-gradient-to-br ${SLIDES[i]?.bg ?? "from-slate-800 to-slate-900"}`} />
-                )}
-              </div>
-            ))}
+        <div className="fixed inset-0 z-50 bg-black">
+          <button
+            type="button"
+            aria-label="Previous slide"
+            className="absolute inset-y-0 left-0 w-1/2 cursor-w-resize"
+            onClick={() => goToSlide(feedSlide - 1)}
+          />
+          <button
+            type="button"
+            aria-label="Next slide"
+            className="absolute inset-y-0 right-0 w-1/2 cursor-e-resize"
+            onClick={() => goToSlide(feedSlide + 1)}
+          />
+          <div className="relative z-10 h-full w-full max-w-[430px] mx-auto bg-black flex flex-col">
+            <div className="flex items-center justify-between px-4 pt-12 pb-3 shrink-0 z-10">
+              <button onClick={() => setActiveSlide(null)} className="text-white/70 hover:text-white">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
+              </button>
+              <span className="text-xs font-semibold text-white/50">{feedSlide + 1} / {slideCount}</span>
+              <div className="w-6" />
+            </div>
+            <div
+              ref={slideFeedRef}
+              onScroll={onSlideFeedScroll}
+              className="flex-1 overflow-y-scroll snap-y snap-mandatory"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {Array.from({ length: Math.max(slideCount, 1) }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-full snap-start shrink-0 flex items-center justify-center relative" style={{ background: "#111" }}
+                >
+                  {pdfPages[i] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={pdfPages[i]} alt={`Slide ${i + 1}`} className="w-full h-full object-contain" />
+                  ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${SLIDES[i]?.bg ?? "from-slate-800 to-slate-900"}`} />
+                  )}
+                  <button
+                    type="button"
+                    aria-label="Previous slide"
+                    className="absolute inset-y-0 left-0 w-1/2 cursor-w-resize"
+                    onClick={() => goToSlide(i - 1)}
+                  />
+                  <button
+                    type="button"
+                    aria-label="Next slide"
+                    className="absolute inset-y-0 right-0 w-1/2 cursor-e-resize"
+                    onClick={() => goToSlide(i + 1)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -817,7 +843,7 @@ export default function Home() {
           <p className="text-sm mt-4 leading-relaxed">
             Danger Testing is building the Warhol Factory for software.
             <br />
-            47 apps. 60M+ views. 20k users.
+            47 apps. 90M+ views. 20k users.
             <br />
             <br />
             Started as a band, dropping apps like songs every week.
@@ -1060,9 +1086,6 @@ export default function Home() {
             />
             <div className="relative bg-[#1c1c1e] rounded-t-3xl px-6 pt-5 pb-10">
               <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-6" />
-              <p className="text-white text-lg font-semibold leading-relaxed mb-6">
-                Need help convincing your partners to invest? Make them manifest.
-              </p>
               <div className="flex gap-6 justify-center mb-6">
                 <div className="flex flex-col items-center gap-1.5">
                   <button
