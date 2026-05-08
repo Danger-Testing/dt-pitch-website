@@ -30,6 +30,8 @@ function FeedVideo({ src }: { src: string }) {
 }
 
 const PDF_URL = "/danger-testing-deck-seed.pdf?v=2026-05-06";
+const INVEST_EMAIL_URL =
+  "mailto:marc@dangertesting.com?subject=Danger%20Testing%20-%20Seed%20Round";
 
 // ─── Vibes — add YouTube IDs or local filenames here ─────────────────────────
 const VIBES: {
@@ -555,7 +557,7 @@ export default function Home() {
                   {/* Invest overlay */}
                   {showFund === i && (
                     <div className="absolute inset-0 flex items-center justify-center z-20" onClick={() => setShowFund(null)}>
-                      <a href="/wire.pdf" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="bg-[#fe2c55] text-white font-black text-base px-8 py-4 rounded-full shadow-2xl">Invest ↗</a>
+                      <a href={INVEST_EMAIL_URL} onClick={(e) => e.stopPropagation()} className="bg-[#fe2c55] text-white font-black text-base px-8 py-4 rounded-full shadow-2xl">Invest ↗</a>
                     </div>
                   )}
                   {/* Bottom overlay */}
@@ -829,15 +831,16 @@ export default function Home() {
           {/* CTA buttons */}
           <div className="flex gap-2 mt-4">
             <button
-              onClick={() => window.open("/wire.pdf", "_blank")}
+              onClick={() => {
+                window.location.href = INVEST_EMAIL_URL;
+              }}
               className="flex-1 bg-[#fe2c55] text-white font-bold py-2 rounded-md text-sm hover:bg-[#e0264c] transition-colors"
             >
               Invest
             </button>
             <button
               onClick={() => {
-                window.location.href =
-                  "mailto:marc@dangertesting.com?subject=Danger%20Testing%20-%20Seed%20Round";
+                window.location.href = INVEST_EMAIL_URL;
               }}
               className="flex-1 border border-white/20 text-white font-bold py-2 rounded-md text-sm hover:bg-white/10 transition-colors"
             >
